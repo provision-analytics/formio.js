@@ -98,6 +98,17 @@ export default [
       {
         input: true,
         type: 'checkbox',
+        label: 'Override breadcrumbSettings.clickable option',
+        key: 'overrideBreadcrumbClickableOption',
+        defaultValue: false,
+        tooltip: 'Determines if breadcrumbClickable overrides breadcrumbSettings.clickable.',
+        conditional: {
+          json: { '===': [{ var: 'data.breadcrumbClickable' }, true] }
+        }
+      },
+      {
+        input: true,
+        type: 'checkbox',
         label: 'Allow Previous',
         key: 'allowPrevious',
         defaultValue: false,
