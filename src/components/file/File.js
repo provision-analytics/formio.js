@@ -46,7 +46,7 @@ export default class FileComponent extends Field {
   static get builderInfo() {
     return {
       title: 'File',
-      group: 'premium',
+      group: 'advanced',
       icon: 'file',
       documentation: '/userguide/#file',
       weight: 100,

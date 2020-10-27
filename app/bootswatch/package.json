@@ -1,6 +1,18 @@
 {
+<<<<<<< HEAD
   "_from": "bootswatch@4.5.3",
   "_id": "bootswatch@4.5.3",
+=======
+  "_args": [
+    [
+      "bootswatch@4.5.2",
+      "/home/pa_chris/GitHub/formio.js"
+    ]
+  ],
+  "_development": true,
+  "_from": "bootswatch@4.5.2",
+  "_id": "bootswatch@4.5.2",
+>>>>>>> Formio Customizations
   "_inBundle": false,
   "_integrity": "sha512-gaB3gBSAegmYbk97aVELKcSKVdPjWsSY4yCITkUt/SqbqjtMU/HtIUszb4O9vzdbrfuVXThc/qCXzjoJaAPgiQ==",
   "_location": "/bootswatch",
@@ -19,10 +31,16 @@
     "#DEV:/",
     "#USER"
   ],
+<<<<<<< HEAD
   "_resolved": "https://registry.npmjs.org/bootswatch/-/bootswatch-4.5.3.tgz",
   "_shasum": "bd9bd4fa212bd5872c932be58ed54e376ee7ccc5",
   "_spec": "bootswatch@4.5.3",
   "_where": "/Users/travistidwell/Documents/formio/modules/formio.js",
+=======
+  "_resolved": "https://registry.npmjs.org/bootswatch/-/bootswatch-4.5.2.tgz",
+  "_spec": "4.5.2",
+  "_where": "/home/pa_chris/GitHub/formio.js",
+>>>>>>> Formio Customizations
   "author": {
     "name": "Thomas Park"
   },

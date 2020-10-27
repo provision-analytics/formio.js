@@ -12,7 +12,7 @@ export default class SelectComponent extends Field {
       type: 'select',
       label: 'Select',
       key: 'select',
-      idPath: 'id',
+      idPath: 'oid',
       data: {
         values: [],
         json: '',
@@ -196,9 +196,9 @@ export default class SelectComponent extends Field {
     if (data.data) {
       // checking additional fields in the template for the selected Entire Object option
       const hasNestedFields = /item\.data\.\w*/g.test(this.component.template);
-      data.data = this.isEntireObjectDisplay() && _.isObject(data.data) && !hasNestedFields
-        ? JSON.stringify(data.data)
-        : data.data;
+      data.data = this.isEntireObjectDisplay() && _.isObject(data.data) && !hasNestedFields ?
+        JSON.stringify(data.data) :
+        data.data;
     }
     const template = this.component.template ? this.interpolate(this.component.template, { item: data }) : data.label;
     if (template) {
@@ -219,24 +219,22 @@ export default class SelectComponent extends Field {
    */
   addOption(value, label, attrs = {}, id = getRandomComponentId()) {
     if (_.isNil(label)) return;
-    const idPath = this.component.idPath
-      ? this.component.idPath.split('.').reduceRight((obj, key) => ({ [key]: obj }), id)
-      : {};
+    const idPath = this.component.idPath ?
+      this.component.idPath.split('.').reduceRight((obj, key) => ({
+        [key]: obj
+      }), id) : {};
     const option = {
-      value: _.isObject(value) && this.isEntireObjectDisplay()
-        ? this.normalizeSingleValue(value)
-        : _.isObject(value)
-          ? value
-          : _.isNull(value)
-            ? this.emptyValue
-            : String(this.normalizeSingleValue(value)),
+      value: _.isObject(value) && this.isEntireObjectDisplay() ?
+        this.normalizeSingleValue(value) : _.isObject(value) ?
+        value : _.isNull(value) ?
+        this.emptyValue : String(this.normalizeSingleValue(value)),
       label: label,
       ...idPath
     };
 
-    const skipOption = this.component.uniqueOptions
-      ? !!this.selectOptions.find((selectOption) => _.isEqual(selectOption.value, option.value))
-      : false;
+    const skipOption = this.component.uniqueOptions ?
+      !!this.selectOptions.find((selectOption) => _.isEqual(selectOption.value, option.value)) :
+      false;
 
     if (skipOption) {
       return;
@@ -287,151 +285,151 @@ export default class SelectComponent extends Field {
 
   /* eslint-disable max-statements */
   setItems(items, fromSearch) {
-    // If the items is a string, then parse as JSON.
-    if (typeof items == 'string') {
-      try {
-        items = JSON.parse(items);
-      }
-      catch (err) {
-        console.warn(err.message);
-        items = [];
-      }
-    }
-
-    // Allow js processing (needed for form builder)
-    if (this.component.onSetItems && typeof this.component.onSetItems === 'function') {
-      const newItems = this.component.onSetItems(this, items);
-      if (newItems) {
-        items = newItems;
-      }
-    }
-
-    if (!this.choices && this.refs.selectContainer) {
-      if (this.loading) {
-        // this.removeChildFrom(this.refs.input[0], this.selectContainer);
-      }
-
-      this.empty(this.refs.selectContainer);
-    }
-
-    // If they provided select values, then we need to get them instead.
-    if (this.component.selectValues) {
-      items = _.get(items, this.component.selectValues, items) || [];
-    }
-
-    let areItemsEqual;
-
-    if (this.isInfiniteScrollProvided) {
-      areItemsEqual = this.isSelectURL ? _.isEqual(items, this.downloadedResources) : false;
-
-      const areItemsEnded = this.component.limit > items.length;
-      const areItemsDownloaded = areItemsEqual
-        && this.downloadedResources
-        && this.downloadedResources.length === items.length;
-
-      if (areItemsEnded) {
-        this.disableInfiniteScroll();
-      }
-      else if (areItemsDownloaded) {
-        this.selectOptions = [];
-      }
-      else {
-        this.serverCount = items.serverCount;
-      }
-    }
-
-    if (this.isScrollLoading && items) {
-      if (!areItemsEqual) {
-        this.downloadedResources = this.downloadedResources
-          ? this.downloadedResources.concat(items)
-          : items;
-      }
-
-      this.downloadedResources.serverCount = items.serverCount || this.downloadedResources.serverCount;
-    }
-    else {
-      this.downloadedResources = items || [];
-      this.selectOptions = [];
-      // If there is new select option with same id as already selected, set the new one
-      if (!_.isEmpty(this.dataValue) && this.component.idPath) {
-        const selectedOptionId = _.get(this.dataValue, this.component.idPath, null);
-        const newOptionWithSameId = !_.isNil(selectedOptionId) && items.find(item => {
-          const itemId = _.get(item, this.component.idPath);
-
-          return itemId === selectedOptionId;
-        });
-
-        if (newOptionWithSameId) {
-          this.setValue(newOptionWithSameId);
+      // If the items is a string, then parse as JSON.
+      if (typeof items == 'string') {
+        try {
+          items = JSON.parse(items);
+        }
+        catch (err) {
+          console.warn(err.message);
+          items = [];
         }
       }
-    }
 
-    // Add the value options.
-    if (!fromSearch) {
-      this.addValueOptions(items);
-    }
-
-    if (this.component.widget === 'html5' && !this.component.placeholder) {
-      this.addOption(null, '');
-    }
-
-    // Iterate through each of the items.
-    _.each(items, (item, index) => {
-      // preventing references of the components inside the form to the parent form when building forms
-      if (this.root && this.root.options.editForm && this.root.options.editForm._id && this.root.options.editForm._id === item._id) return;
-      this.addOption(this.itemValue(item), this.itemTemplate(item), {}, _.get(item, this.component.idPath, String(index)));
-    });
-
-    if (this.choices) {
-      this.choices.setChoices(this.selectOptions, 'value', 'label', true);
-
-      if (this.overlayOptions) {
-        const { element: optionsDropdown } = this.choices.dropdown;
-
-        optionsDropdown.style.position = 'fixed';
-
-        const recalculatePosition = () => {
-          const { top, height, width } = this.element.getBoundingClientRect();
-
-          optionsDropdown.style.top = `${top + height}px`;
-          optionsDropdown.style.width = `${width}px`;
-        };
-
-        recalculatePosition();
-
-        ['scroll', 'resize'].forEach(
-          eventType => this.addEventListener(window, eventType, recalculatePosition)
-        );
+      // Allow js processing (needed for form builder)
+      if (this.component.onSetItems && typeof this.component.onSetItems === 'function') {
+        const newItems = this.component.onSetItems(this, items);
+        if (newItems) {
+          items = newItems;
+        }
       }
-    }
-    else if (this.loading) {
-      // Re-attach select input.
-      // this.appendTo(this.refs.input[0], this.selectContainer);
-    }
 
-    // We are no longer loading.
-    this.isScrollLoading = false;
-    this.loading = false;
+      if (!this.choices && this.refs.selectContainer) {
+        if (this.loading) {
+          // this.removeChildFrom(this.refs.input[0], this.selectContainer);
+        }
 
-    // If a value is provided, then select it.
-    if (this.dataValue) {
-      this.setValue(this.dataValue, {
-        noUpdateEvent: true
+        this.empty(this.refs.selectContainer);
+      }
+
+      // If they provided select values, then we need to get them instead.
+      if (this.component.selectValues) {
+        items = _.get(items, this.component.selectValues, items) || [];
+      }
+
+      let areItemsEqual;
+
+      if (this.isInfiniteScrollProvided) {
+        areItemsEqual = this.isSelectURL ? _.isEqual(items, this.downloadedResources) : false;
+
+        const areItemsEnded = this.component.limit > items.length;
+        const areItemsDownloaded = areItemsEqual &&
+          this.downloadedResources &&
+          this.downloadedResources.length === items.length;
+
+        if (areItemsEnded) {
+          this.disableInfiniteScroll();
+        }
+        else if (areItemsDownloaded) {
+          this.selectOptions = [];
+        }
+        else {
+          this.serverCount = items.serverCount;
+        }
+      }
+
+      if (this.isScrollLoading && items) {
+        if (!areItemsEqual) {
+          this.downloadedResources = this.downloadedResources ?
+            this.downloadedResources.concat(items) :
+            items;
+        }
+
+        this.downloadedResources.serverCount = items.serverCount || this.downloadedResources.serverCount;
+      }
+      else {
+        this.downloadedResources = items || [];
+        this.selectOptions = [];
+        // If there is new select option with same id as already selected, set the new one
+        if (!_.isEmpty(this.dataValue) && this.component.idPath) {
+          const selectedOptionId = _.get(this.dataValue, this.component.idPath, null);
+          const newOptionWithSameId = !_.isNil(selectedOptionId) && items.find(item => {
+            const itemId = _.get(item, this.component.idPath);
+
+            return itemId === selectedOptionId;
+          });
+
+          if (newOptionWithSameId) {
+            this.setValue(newOptionWithSameId);
+          }
+        }
+      }
+
+      // Add the value options.
+      if (!fromSearch) {
+        this.addValueOptions(items);
+      }
+
+      if (this.component.widget === 'html5' && !this.component.placeholder) {
+        this.addOption(null, '');
+      }
+
+      // Iterate through each of the items.
+      _.each(items, (item, index) => {
+        // preventing references of the components inside the form to the parent form when building forms
+        if (this.root && this.root.options.editForm && this.root.options.editForm._id && this.root.options.editForm._id === item._id) return;
+        this.addOption(this.itemValue(item), this.itemTemplate(item), {}, _.get(item, this.component.idPath, String(index)));
       });
-    }
-    else {
-      // If a default value is provided then select it.
-      const defaultValue = this.multiple ? this.defaultValue || [] : this.defaultValue;
-      if (defaultValue) {
-        this.setValue(defaultValue);
-      }
-    }
 
-    // Say we are done loading the items.
-    this.itemsLoadedResolve();
-  }
-  /* eslint-enable max-statements */
+      if (this.choices) {
+        this.choices.setChoices(this.selectOptions, 'value', 'label', true);
+
+        if (this.overlayOptions) {
+          const { element: optionsDropdown } = this.choices.dropdown;
+
+          optionsDropdown.style.position = 'fixed';
+
+          const recalculatePosition = () => {
+            const { top, height, width } = this.element.getBoundingClientRect();
+
+            optionsDropdown.style.top = `${top + height}px`;
+            optionsDropdown.style.width = `${width}px`;
+          };
+
+          recalculatePosition();
+
+          ['scroll', 'resize'].forEach(
+            eventType => this.addEventListener(window, eventType, recalculatePosition)
+          );
+        }
+      }
+      else if (this.loading) {
+        // Re-attach select input.
+        // this.appendTo(this.refs.input[0], this.selectContainer);
+      }
+
+      // We are no longer loading.
+      this.isScrollLoading = false;
+      this.loading = false;
+
+      // If a value is provided, then select it.
+      if (this.dataValue) {
+        this.setValue(this.dataValue, {
+          noUpdateEvent: true
+        });
+      }
+      else {
+        // If a default value is provided then select it.
+        const defaultValue = this.multiple ? this.defaultValue || [] : this.defaultValue;
+        if (defaultValue) {
+          this.setValue(defaultValue);
+        }
+      }
+
+      // Say we are done loading the items.
+      this.itemsLoadedResolve();
+    }
+    /* eslint-enable max-statements */
 
   loadItems(url, search, headers, options, method, body) {
     options = options || {};
@@ -613,133 +611,83 @@ export default class SelectComponent extends Field {
 
   /* eslint-disable max-statements */
   updateItems(searchInput, forceUpdate) {
-    this.itemsLoaded = new NativePromise((resolve) => {
-      this.itemsLoadedResolve = resolve;
-    });
-    if (!this.component.data) {
-      console.warn(`Select component ${this.key} does not have data configuration.`);
-      this.itemsLoadedResolve();
-      return;
-    }
-
-    // Only load the data if it is visible.
-    if (!this.checkConditions()) {
-      this.itemsLoadedResolve();
-      return;
-    }
-
-    switch (this.component.dataSrc) {
-      case 'values':
-        this.setItems(this.component.data.values);
-        break;
-      case 'json':
-        this.setItems(this.component.data.json);
-        break;
-      case 'custom':
-        this.updateCustomItems();
-        break;
-      case 'resource': {
-        // If there is no resource, or we are lazyLoading, wait until active.
-        if (!this.component.data.resource || (!forceUpdate && !this.active)) {
-          return;
-        }
-
-        let resourceUrl = this.options.formio ? this.options.formio.formsUrl : `${Formio.getProjectUrl()}/form`;
-        resourceUrl += (`/${this.component.data.resource}/submission`);
-
-        if (forceUpdate || this.additionalResourcesAvailable || this.dataValue.length && !this.serverCount) {
-          try {
-            this.loadItems(resourceUrl, searchInput, this.requestHeaders);
-          }
-          catch (err) {
-            console.warn(`Unable to load resources for ${this.key}`);
-          }
-        }
-        else {
-          this.setItems(this.downloadedResources);
-        }
-        break;
+      this.itemsLoaded = new NativePromise((resolve) => {
+        this.itemsLoadedResolve = resolve;
+      });
+      if (!this.component.data) {
+        console.warn(`Select component ${this.key} does not have data configuration.`);
+        this.itemsLoadedResolve();
+        return;
       }
-      case 'url': {
-        if (!forceUpdate && !this.active && !this.calculatedValue) {
-          // If we are lazyLoading, wait until activated.
-          return;
-        }
-        let { url } = this.component.data;
-        let method;
-        let body;
 
-        if (url.startsWith('/')) {
-          // if URL starts with '/project', we should use base URL to avoid issues with URL formed like <base_url>/<project_name>/project/<project_id>/...
-          const baseUrl = url.startsWith('/project') ? Formio.getBaseUrl() : Formio.getProjectUrl() || Formio.getBaseUrl();
-          url = baseUrl + url;
-        }
-
-        if (!this.component.data.method) {
-          method = 'GET';
-        }
-        else {
-          method = this.component.data.method;
-          if (method.toUpperCase() === 'POST') {
-            body = this.component.data.body;
-          }
-          else {
-            body = null;
-          }
-        }
-        const options = this.component.authenticate ? {} : { noToken: true };
-        this.loadItems(url, searchInput, this.requestHeaders, options, method, body);
-        break;
+      // Only load the data if it is visible.
+      if (!this.checkConditions()) {
+        this.itemsLoadedResolve();
+        return;
       }
-      case 'indexeddb': {
-        if (!window.indexedDB) {
-          window.alert("Your browser doesn't support current version of indexedDB");
-        }
 
-        if (this.component.indexeddb && this.component.indexeddb.database && this.component.indexeddb.table) {
-          const request = window.indexedDB.open(this.component.indexeddb.database);
-
-          request.onupgradeneeded = (event) => {
-            if (this.component.customOptions) {
-              const db = event.target.result;
-              const objectStore = db.createObjectStore(this.component.indexeddb.table, { keyPath: 'myKey', autoIncrement: true });
-              objectStore.transaction.oncomplete = () => {
-                const transaction = db.transaction(this.component.indexeddb.table, 'readwrite');
-                this.component.customOptions.forEach((item) => {
-                  transaction.objectStore(this.component.indexeddb.table).put(item);
-                });
-              };
+      switch (this.component.dataSrc) {
+        case 'values':
+          this.setItems(this.component.data.values);
+          break;
+        case 'resource':
+          {
+            // If there is no resource, or we are lazyLoading, wait until active.
+            if (!this.component.data.resource || (!forceUpdate && !this.active)) {
+              return;
             }
-          };
 
-          request.onerror = () => {
-            window.alert(request.errorCode);
-          };
+            let resourceUrl = this.options.formio ? this.options.formio.formsUrl : `${Formio.getProjectUrl()}/form`;
+            resourceUrl += (`/${this.component.data.resource}/submission`);
 
-          request.onsuccess = (event) => {
-            const db = event.target.result;
-            const transaction = db.transaction(this.component.indexeddb.table, 'readwrite');
-            const objectStore = transaction.objectStore(this.component.indexeddb.table);
-            new NativePromise((resolve) => {
-              const responseItems = [];
-              objectStore.getAll().onsuccess = (event) => {
-                event.target.result.forEach((item) => {
-                  responseItems.push(item);
-                });
-                resolve(responseItems);
-              };
-            }).then((items) => {
-              if (!_.isEmpty(this.component.indexeddb.filter)) {
-                items = _.filter(items, this.component.indexeddb.filter);
+            if (forceUpdate || this.additionalResourcesAvailable || this.dataValue.length && !this.serverCount) {
+              try {
+                this.loadItems(resourceUrl, searchInput, this.requestHeaders);
               }
-              this.setItems(items);
-            });
-          };
-        }
+              catch (err) {
+                console.warn(`Unable to load resources for ${this.key}`);
+              }
+            }
+            else {
+              this.setItems(this.downloadedResources);
+            }
+            break;
+          }
+        case 'url':
+          {
+            if (!forceUpdate && !this.active && !this.calculatedValue) {
+              // If we are lazyLoading, wait until activated.
+              return;
+            }
+            let { url } = this.component.data;
+            let method;
+            let body;
+
+            if (url.startsWith('/')) {
+              // if URL starts with '/project', we should use base URL to avoid issues with URL formed like <base_url>/<project_name>/project/<project_id>/...
+              const baseUrl = url.startsWith('/project') ? Formio.getBaseUrl() : Formio.getProjectUrl() || Formio.getBaseUrl();
+              url = baseUrl + url;
+            }
+
+            if (!this.component.data.method) {
+              method = 'GET';
+            }
+            else {
+              method = this.component.data.method;
+              if (method.toUpperCase() === 'POST') {
+                body = this.component.data.body;
+              }
+              else {
+                body = null;
+              }
+            }
+            const options = this.component.authenticate ? {} : { noToken: true };
+            this.loadItems(url, searchInput, this.requestHeaders, options, method, body);
+            break;
+          }
       }
     }
-  }
-  /* eslint-enable max-statements */
+    /* eslint-enable max-statements */
 
   addPlaceholder() {
     if (!this.component.placeholder) {
@@ -776,8 +724,7 @@ export default class SelectComponent extends Field {
 
   render() {
     const info = this.inputInfo;
-    const styles = this.overlayOptions
-      ? {
+    const styles = this.overlayOptions ? {
         position: 'fixed',
         display: 'block',
         width: '400px',
@@ -787,8 +734,8 @@ export default class SelectComponent extends Field {
         right: 0,
         bottom: 0,
         'z-index': 2
-      }
-      : null;
+      } :
+      null;
     info.attr = info.attr || {};
     info.multiple = this.component.multiple;
     return super.render(this.wrapElement(this.renderTemplate('select', {
@@ -800,13 +747,13 @@ export default class SelectComponent extends Field {
   }
 
   wrapElement(element) {
-    return this.component.addResource && !this.options.readOnly
-      ? (
+    return this.component.addResource && !this.options.readOnly ?
+      (
         this.renderTemplate('resourceAdd', {
           element
         })
-      )
-      : element;
+      ) :
+      element;
   }
 
   choicesOptions() {
@@ -841,10 +788,8 @@ export default class SelectComponent extends Field {
       searchEnabled: useSearch,
       searchChoices: !this.component.searchField,
       searchFields: _.get(this, 'component.searchFields', ['label']),
-      fuseOptions: Object.assign(
-        {},
-        _.get(this, 'component.fuseOptions', {}),
-        {
+      fuseOptions: Object.assign({},
+        _.get(this, 'component.fuseOptions', {}), {
           include: 'score',
           threshold: _.get(this, 'component.searchThreshold', 0.3),
         }
@@ -928,9 +873,9 @@ export default class SelectComponent extends Field {
     if (this.isInfiniteScrollProvided) {
       this.scrollList = this.choices.choiceList.element;
       this.onScroll = () => {
-        const isLoadingAvailable = !this.isScrollLoading
-          && this.additionalResourcesAvailable
-          && ((this.scrollList.scrollTop + this.scrollList.clientHeight) >= this.scrollList.scrollHeight);
+        const isLoadingAvailable = !this.isScrollLoading &&
+          this.additionalResourcesAvailable &&
+          ((this.scrollList.scrollTop + this.scrollList.clientHeight) >= this.scrollList.scrollHeight);
 
         if (isLoadingAvailable) {
           this.isScrollLoading = true;
@@ -1151,17 +1096,17 @@ export default class SelectComponent extends Field {
   }
 
   getValueAsString(data) {
-    return (this.component.multiple && Array.isArray(data))
-      ? data.map(this.asString.bind(this)).join(', ')
-      : this.asString(data);
+    return (this.component.multiple && Array.isArray(data)) ?
+      data.map(this.asString.bind(this)).join(', ') :
+      this.asString(data);
   }
 
   getValue() {
     // If the widget isn't active.
     if (
-      this.viewOnly || this.loading
-      || (!this.component.lazyLoad && !this.selectOptions.length)
-      || !this.element
+      this.viewOnly || this.loading ||
+      (!this.component.lazyLoad && !this.selectOptions.length) ||
+      !this.element
     ) {
       return this.dataValue;
     }
@@ -1171,8 +1116,7 @@ export default class SelectComponent extends Field {
       value = this.choices.getValue(true);
 
       // Make sure we don't get the placeholder
-      if (
-        !this.component.multiple &&
+      if (!this.component.multiple &&
         this.component.placeholder &&
         (value === this.t(this.component.placeholder))
       ) {
@@ -1235,9 +1179,9 @@ export default class SelectComponent extends Field {
 
       boolean() {
         if (
-          _.isString(this.value)
-          && (this.value.toLowerCase() === 'true'
-            || this.value.toLowerCase() === 'false')
+          _.isString(this.value) &&
+          (this.value.toLowerCase() === 'true' ||
+            this.value.toLowerCase() === 'false')
         ) {
           this.value = (this.value.toLowerCase() === 'true');
         }
@@ -1262,7 +1206,7 @@ export default class SelectComponent extends Field {
         if (_.isObject(this.value)) {
           this.value = this.object().value;
         }
-        else {
+	else {
           this.value = this.string().number().boolean().value;
         }
 
@@ -1432,7 +1376,7 @@ export default class SelectComponent extends Field {
         if (Array.isArray(data)) {
           data.forEach((item) => item[valueProperty] = item[valueProperty].toString());
         }
-        else {
+	else {
           data[valueProperty] = data[valueProperty].toString();
         }
         return data;
@@ -1459,21 +1403,19 @@ export default class SelectComponent extends Field {
       const {
         items,
         valueProperty,
-      } = this.component.dataSrc === 'values'
-          ? {
-            items: convertToString(this.getNormalizedValues(), 'value'),
-            valueProperty: 'value',
-          }
-          : {
-            items: convertToString(this.getCustomItems(), this.valueProperty),
-            valueProperty: this.valueProperty,
-          };
+      } = this.component.dataSrc === 'values' ? {
+        items: convertToString(this.getNormalizedValues(), 'value'),
+        valueProperty: 'value',
+      } : {
+        items: convertToString(this.getCustomItems(), this.valueProperty),
+        valueProperty: this.valueProperty,
+      };
 
-      value = (this.component.multiple && Array.isArray(value))
-        ? _.filter(items, (item) => value.includes(item.value))
-        : valueProperty
-          ? _.find(items, [valueProperty, value])
-          : value;
+      value = (this.component.multiple && Array.isArray(value)) ?
+        _.filter(items, (item) => value.includes(item.value)) :
+        valueProperty ?
+        _.find(items, [valueProperty, value]) :
+        value;
     }
 
     if (_.isString(value)) {
@@ -1486,9 +1428,9 @@ export default class SelectComponent extends Field {
       return items.length > 0 ? items.join('<br />') : '-';
     }
 
-    return !_.isNil(value)
-      ? this.itemTemplate(value)
-      : '-';
+    return !_.isNil(value) ?
+      this.itemTemplate(value) :
+      '-';
   }
 
   detach() {

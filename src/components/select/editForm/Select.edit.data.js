@@ -14,60 +14,8 @@ export default [
       values: [
         { label: 'Values', value: 'values' },
         { label: 'URL', value: 'url' },
-        { label: 'Resource', value: 'resource' },
-        { label: 'Custom', value: 'custom' },
-        { label: 'Raw JSON', value: 'json' },
-        { label: 'IndexedDB', value: 'indexeddb' },
+        { label: 'Resource', value: 'resource' }
       ],
-    },
-  },
-  {
-    type: 'textfield',
-    weight: 10,
-    input: true,
-    key: 'indexeddb.database',
-    label: 'Database name',
-    tooltip: 'The name of the indexeddb database.',
-    conditional: {
-      json: { '===': [{ var: 'data.dataSrc' }, 'indexeddb'] },
-    },
-  },
-  {
-    type: 'textfield',
-    input: true,
-    key: 'indexeddb.table',
-    label: 'Table name',
-    weight: 16,
-    tooltip: 'The name of table in the indexeddb database.',
-    conditional: {
-      json: { '===': [{ var: 'data.dataSrc' }, 'indexeddb'] },
-    }
-  },
-  {
-    type: 'textarea',
-    as: 'json',
-    editor: 'ace',
-    weight: 18,
-    input: true,
-    key: 'indexeddb.filter',
-    label: 'Row Filter',
-    tooltip: 'Filter table items that match the object.',
-    defaultValue: {},
-    conditional: {
-      json: { '===': [{ var: 'data.dataSrc' }, 'indexeddb'] },
-    },
-  },
-  {
-    type: 'textarea',
-    as: 'json',
-    editor: 'ace',
-    weight: 10,
-    input: true,
-    key: 'data.json',
-    label: 'Data Source Raw JSON',
-    tooltip: 'A raw JSON array to use as a data source.',
-    conditional: {
-      json: { '===': [{ var: 'data.dataSrc' }, 'json'] },
     },
   },
   {
@@ -123,7 +71,15 @@ export default [
       },
     ],
     conditional: {
-      json: { '===': [{ var: 'data.dataSrc' }, 'url'] },
+      json: {
+        in: [
+          { var: 'data.dataSrc' },
+          [
+            'resource',
+            'url',
+          ],
+        ],
+      },
     },
   },
   {
@@ -202,32 +158,28 @@ export default [
     dataSrc: 'url',
     lazyLoad: false,
     onSetItems(component, form) {
+      console.log('onSetItems');
+      console.log(JSON.stringify(form));
       const newItems = form.type === 'resource'
         ? [{
             label: '{Entire Object}',
             key: 'data',
           }]
         : [];
-
+      const allFields = [];
       eachComponent(form.components, (component, path) => {
         if (component.input) {
           newItems.push({
             label: component.label || component.key,
             key: `data.${path}`
           });
+          const templateProp = `${path}`;
+          allFields.push(`${templateProp}`);
+          console.log(`adding ${component.key}`);
         }
       });
+      component.root.getComponent('allFields').setValue(allFields.join(','));
       return newItems;
-    },
-    onChange(context) {
-      if (context && context.flags && context.flags.modified) {
-        const valueProp = context.instance.data.valueProperty;
-        const templateProp = valueProp ? valueProp : 'data';
-        const template = `<span>{{ item.${templateProp} }}</span>`;
-        const searchField = valueProp ? `${valueProp}__regex` : '';
-        context.instance.root.getComponent('template').setValue(template);
-        context.instance.root.getComponent('searchField').setValue(searchField);
-      }
     },
     data: {
       url: '/form/{{ data.data.resource }}',
@@ -264,15 +216,6 @@ export default [
   {
     type: 'textfield',
     input: true,
-    key: 'idPath',
-    weight: 12,
-    label: 'ID Path',
-    placeholder: 'id',
-    tooltip: 'Path to the select option id.'
-  },
-  {
-    type: 'textfield',
-    input: true,
     label: 'Value Property',
     key: 'valueProperty',
     skipMerge: true,
@@ -285,12 +228,22 @@ export default [
         in: [
           { var: 'data.dataSrc' },
           [
-            'json',
             'url',
-            'custom'
           ],
         ],
       },
+    },
+  },
+  {
+    type: 'textarea',
+    input: true,
+    rows: 4,
+    label: 'All Fields',
+    key: 'allFields',
+    tooltip: 'The properties available from the resource.',
+    weight: 14,
+    conditional: {
+      json: { '===': [{ var: 'data.dataSrc' }, 'resource'] },
     },
   },
   {
@@ -301,13 +254,28 @@ export default [
     tooltip: 'The properties on the resource to return as part of the options. Separate property names by commas. If left blank, all properties will be returned.',
     placeholder: 'Comma separated list of fields to select.',
     weight: 14,
+    onChange(context) {
+      console.log('onChange Select Fields');
+      if (context && context.flags && context.flags.modified) {
+        console.log('Setting new allFields');
+        const fields = context.instance.data.selectFields.split(',');
+        const templateArray = ['<span>'];
+        if (fields && fields.length > 0) {
+          for (const field of fields) {
+            if (field) {
+              templateArray.push(`{{ item.${field} }}`);
+            }
+          }
+        }
+        else {
+          templateArray.push('{{ item.label }}');
+        }
+        templateArray.push('</span>');
+        context.instance.root.getComponent('template').setValue(templateArray.join(' '));
+      }
+    },
     conditional: {
-      json: {
-        and: [
-          { '===': [{ var: 'data.dataSrc' }, 'resource'] },
-          { '===': [{ var: 'data.valueProperty' }, ''] },
-        ],
-      },
+      json: { '===': [{ var: 'data.dataSrc' }, 'resource'] },
     },
   },
   {
@@ -422,20 +390,6 @@ export default [
   {
     type: 'textarea',
     input: true,
-    key: 'data.custom',
-    label: 'Custom Values',
-    editor: 'ace',
-    rows: 10,
-    weight: 14,
-    placeholder: "values = data['mykey'];",
-    tooltip: 'Write custom code to return the value options. The form data object is available.',
-    conditional: {
-      json: { '===': [{ var: 'data.dataSrc' }, 'custom'] },
-    },
-  },
-  {
-    type: 'textarea',
-    input: true,
     key: 'template',
     label: 'Item Template',
     editor: 'ace',
@@ -445,12 +399,17 @@ export default [
     tooltip: 'The HTML template for the result data items.',
     allowCalculateOverride: true,
     calculateValue:(context) => {
+      console.log('calculateValue(context)');
       if (!context.data.template) {
+        console.log('no context.data.template');
         if (context.instance && context.instance._currentForm.options.editComponent) {
+          console.log('instance and edit component');
+          console.log(context.instance._currentForm.options.editComponent.template);
           return context.instance._currentForm.options.editComponent.template;
         }
       }
-
+      console.log('returning');
+      console.log(context.data.template);
       return context.data.template;
     }
   },
@@ -461,43 +420,6 @@ export default [
     label: 'Refresh Options On',
     weight: 19,
     tooltip: 'Refresh data when another field changes.',
-    dataSrc: 'custom',
-    valueProperty: 'value',
-    data: {
-      custom(context) {
-        var values = [];
-        values.push({ label: 'Any Change', value: 'data' });
-        context.utils.eachComponent(context.instance.options.editForm.components, function(component, path) {
-          if (component.key !== context.data.key) {
-            values.push({
-              label: component.label || component.key,
-              value: path
-            });
-          }
-        });
-        return values;
-      }
-    },
-    conditional: {
-      json: {
-        in: [
-          { var: 'data.dataSrc' },
-          [
-            'url',
-            'resource',
-            'values'
-          ],
-        ],
-      },
-    },
-  },
-  {
-    type: 'select',
-    input: true,
-    key: 'refreshOnBlur',
-    label: 'Refresh Options On Blur',
-    weight: 19,
-    tooltip: 'Refresh data when another field is blured.',
     dataSrc: 'custom',
     valueProperty: 'value',
     data: {

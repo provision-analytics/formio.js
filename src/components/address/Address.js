@@ -85,7 +85,7 @@ export default class AddressComponent extends ContainerComponent {
   static get builderInfo() {
     return {
       title: 'Address',
-      group: 'advanced',
+      group: 'hidden',
       icon: 'home',
       documentation: '/userguide/#address',
       weight: 35,
