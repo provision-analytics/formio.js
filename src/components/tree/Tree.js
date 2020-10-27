@@ -22,7 +22,7 @@ export default class TreeComponent extends NestedComponent {
     return {
       title: 'Tree',
       icon: 'indent',
-      group: 'data',
+      group: 'hidden',
       weight: 40,
       schema: TreeComponent.schema(),
     };
@@ -95,12 +95,12 @@ export default class TreeComponent extends NestedComponent {
   }
 
   renderTree(node = {}, odd = true) {
-    const childNodes = (node.hasChildren && !node.collapsed)
-      ? this.renderChildNodes(node.children, !odd)
-      : [];
-    const content = node.changing
-      ? this.renderEdit(node)
-      : this.renderView(node);
+    const childNodes = (node.hasChildren && !node.collapsed) ?
+      this.renderChildNodes(node.children, !odd) :
+      [];
+    const content = node.changing ?
+      this.renderEdit(node) :
+      this.renderView(node);
 
     return this.renderTemplate('tree', {
       odd,
@@ -159,14 +159,13 @@ export default class TreeComponent extends NestedComponent {
     node.refs = _.reduce(
       element.children,
       (refs, child) => (
-        child.hasAttribute('ref')
-          ? {
-            ...refs,
-            [child.getAttribute('ref')]: child,
-          }
-          : refs
-      ),
-      {},
+        child.hasAttribute('ref') ?
+        {
+          ...refs,
+          [child.getAttribute('ref')]: child,
+        } :
+        refs
+      ), {},
     );
 
     if (node.refs.content) {
@@ -247,9 +246,9 @@ export default class TreeComponent extends NestedComponent {
       nodeEdit: 'single',
     });
 
-    return node.refs.nodeEdit
-      ? super.attachComponents(node.refs.nodeEdit, node.components)
-      : NativePromise.resolve();
+    return node.refs.nodeEdit ?
+      super.attachComponents(node.refs.nodeEdit, node.components) :
+      NativePromise.resolve();
   }
 
   attachChildren(node) {
