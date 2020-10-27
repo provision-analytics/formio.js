@@ -1,4 +1,4 @@
-// Sketchy 4.5.3
+// Sketchy 4.5.2
 // Bootswatch
 
 
@@ -7,11 +7,9 @@
 $web-font-path: "https://fonts.googleapis.com/css?family=Neucha|Cabin+Sketch&display=swap" !default;
 @import url($web-font-path);
 
-// stylelint-disable scss/dollar-variable-default
-$border-radius-sketchy:    255px 25px 225px 25px / 25px 225px 25px 255px;
-$border-radius-lg-sketchy: 555px 25px 15px 25px / 25px 5px 35px 555px;
-$border-radius-sm-sketchy: 255px 25px 225px 25px / 25px 225px 25px 255px;
-// style-enable scss/dollar-variable-default
+$border-radius-sketchy: 255px 25px 225px 25px/25px 225px 25px 255px;
+$border-radius-lg-sketchy: 555px 25px 15px 25px/25px 5px 35px 555px;
+$border-radius-sm-sketchy: 255px 25px 225px 25px/25px 225px 25px 255px;
 
 // Navbar ======================================================================
 
@@ -26,17 +24,17 @@ $border-radius-sm-sketchy: 255px 25px 225px 25px / 25px 225px 25px 255px;
 
   &.fixed-top {
     border-radius: 0 25px 225px 0/25px 0 25px 255px;
-    border-width: 0 0 2px;
+    border-width: 0 0 2px 0;
   }
 
   &.fixed-bottom {
     border-radius: 255px 25px 0 25px/25px 225px 25px 0;
-    border-width: 2px 0 0;
+    border-width: 2px 0 0 0;
   }
 
   &-brand {
     font-family: $headings-font-family;
-    font-weight: 400;
+    font-weight: normal;
     text-decoration: none;
   }
 }
@@ -58,11 +56,7 @@ $border-radius-sm-sketchy: 255px 25px 225px 25px / 25px 225px 25px 255px;
 
 // Typography ==================================================================
 
-button,
-input,
-optgroup,
-select,
-textarea {
+button, input, optgroup, select, textarea {
   font-family: $font-family-sans-serif;
 }
 
@@ -75,7 +69,7 @@ blockquote {
 table {
   th,
   td {
-    background-color: $white;
+    background-color: #fff;
   }
 }
 
@@ -93,8 +87,7 @@ table {
 
   .table-success,
   .table-success:hover {
-    td,
-    th {
+    td, th {
       background-color: $success;
       color: $white;
     }
@@ -102,8 +95,7 @@ table {
 
   .table-info,
   .table-info:hover {
-    td,
-    th {
+    td, th {
       background-color: $info;
       color: $white;
     }
@@ -111,8 +103,7 @@ table {
 
   .table-warning,
   .table-warning:hover {
-    td,
-    th {
+    td, th {
       background-color: $warning;
       color: $white;
     }
@@ -120,8 +111,7 @@ table {
 
   .table-danger,
   .table-danger:hover {
-    td,
-    th {
+    td, th {
       background-color: $danger;
       color: $white;
     }
@@ -135,6 +125,7 @@ table {
   &.table-hover .table-active:hover > td {
     background-color: $gray-800;
   }
+
 }
 
 
@@ -162,11 +153,11 @@ select.form-control {
   border: none;
   cursor: pointer;
 
-  &::before {
+  &:before {
     content: "";
     position: absolute;
     left: -1.2em;
-    top: -.9em;
+    top: -0.9em;
     display: inline-block;
     width: 15px;
     height: 16px;
@@ -174,18 +165,18 @@ select.form-control {
     border-radius: 2px 8px 2px 4px / 5px 3px 5px 3px;
   }
 
-  &:checked::after {
+  &:checked:after {
     content: "x";
     position: absolute;
-    left: -.64em;
-    top: -.48em;
+    left: -0.64em;
+    top: -0.48em;
     font-size: 1.5rem;
-    line-height: .5;
+    line-height: 0.5;
     color: $gray-800;
   }
 
   &:disabled {
-    &::before {
+    &:before {
       border: 2px solid $gray-500;
     }
   }
@@ -199,11 +190,11 @@ select.form-control {
   border: none;
   cursor: pointer;
 
-  &::before {
+  &:before {
     content: "";
     position: absolute;
     left: -1.2em;
-    top: -.9em;
+    top: -0.9em;
     display: inline-block;
     width: 16px;
     height: 16px;
@@ -211,12 +202,12 @@ select.form-control {
     border-radius: 50% 45% 40% 50% / 40% 50% 50% 45%;
   }
 
-  &:checked::before {
+  &:checked:before {
     background-color: $gray-800;
   }
 
   &:disabled {
-    &::before {
+    &:before {
       border: 2px solid $gray-500;
     }
   }
@@ -228,19 +219,19 @@ select.form-control {
 
 .form-check-inline {
   [type="checkbox"] {
-    &::before {
+    &:before {
       left: 0;
       top: 0;
     }
 
-    &::after {
-      left: .14em;
-      top: .12em;
+    &:after {
+      left: 0.14em;
+      top: 0.12em;
     }
   }
 
   [type="radio"] {
-    &::before {
+    &:before {
       left: 0;
       top: 0;
     }
@@ -315,6 +306,10 @@ select.form-control {
 
 // Indicators ==================================================================
 
+.progress {
+  border: 2px solid $gray-800;
+}
+
 .badge {
   border-radius: $border-radius-sm-sketchy;
 
@@ -334,9 +329,9 @@ select.form-control {
     .close {
       color: transparent;
 
-      &::before {
+      &:before {
         right: 1rem;
-        top: .8rem;
+        top: 0.8rem;
       }
     }
 
@@ -345,7 +340,7 @@ select.form-control {
 
       &,
       .alert-link,
-      .close::before {
+      .close:before {
         color: $success;
       }
     }
@@ -355,7 +350,7 @@ select.form-control {
 
       &,
       .alert-link,
-      .close::before {
+      .close:before {
         color: $info;
       }
     }
@@ -365,7 +360,7 @@ select.form-control {
 
       &,
       .alert-link,
-      .close::before {
+      .close:before {
         color: $warning;
       }
     }
@@ -375,7 +370,7 @@ select.form-control {
 
       &,
       .alert-link,
-      .close::before {
+      .close:before {
         color: $danger;
       }
     }
@@ -385,7 +380,6 @@ select.form-control {
 // Progress bars ===============================================================
 
 .progress {
-  border: 2px solid $gray-800;
   border-radius: $border-radius-sm-sketchy;
 }
 
@@ -467,6 +461,7 @@ select.form-control {
 }
 
 .tooltip {
+
   &-inner {
     border-radius: $border-radius-sm-sketchy;
   }
@@ -483,7 +478,7 @@ pre {
 .close:active {
   opacity: 1;
 
-  &::before {
+  &:before {
     position: absolute;
     content: "X";
     color: $gray-800;
