@@ -259,7 +259,7 @@ export default [
       if (context && context.flags && context.flags.modified) {
         console.log('Setting new allFields');
         const fields = context.instance.data.selectFields.split(',');
-        const templateArray = ['<span>'];
+        const templateArray = [''];
         if (fields && fields.length > 0) {
           for (const field of fields) {
             if (field) {
@@ -270,7 +270,7 @@ export default [
         else {
           templateArray.push('{{ item.label }}');
         }
-        templateArray.push('</span>');
+        templateArray.push('');
         context.instance.root.getComponent('template').setValue(templateArray.join(' '));
       }
     },
