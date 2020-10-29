@@ -218,7 +218,7 @@ As an example, you can import the Contributed Components into your application u
       }
     }
   }).then(function(builder) {
-    Formio.createForm(document.getElementById('formio'), {}).then(function(instance) {
+    Formio.createForm(document.getElementById('formio'), builder.form).then(function(instance) {
       var json = document.getElementById('json');
       instance.on('change', function() {
         json.innerHTML = '';
@@ -226,6 +226,7 @@ As an example, you can import the Contributed Components into your application u
       });
       builder.on('change', function(schema) {
         if (schema.components) {
+          instance.resetValue();
           instance.form = schema;
         }
       });
@@ -276,6 +277,7 @@ As an example, you can import the Contributed Components into your application u
       });
       builder.on('change', function(schema) {
         if (schema.components) {
+          instance.resetValue();
           instance.form = schema;
         }
       });

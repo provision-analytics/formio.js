@@ -200,7 +200,7 @@ export default class SelectComponent extends Field {
         JSON.stringify(data.data) :
         data.data;
     }
-    const template = this.component.template ? this.interpolate(this.component.template, { item: data }) : data.label;
+    const template = this.sanitize(this.component.template ? this.interpolate(this.component.template, { item: data }) : data.label);
     if (template) {
       const label = template.replace(/<\/?[^>]+(>|$)/g, '');
       if (!label || !this.t(label)) return;
@@ -825,7 +825,7 @@ export default class SelectComponent extends Field {
     this.attachRefreshOnBlur();
 
     if (this.component.widget === 'html5') {
-      this.triggerUpdate();
+      this.triggerUpdate(null, true);
       this.setItems(this.selectOptions || []);
       this.focusableElement = input;
       this.addEventListener(input, 'focus', () => this.update());
