@@ -2,7 +2,7 @@
   "_args": [
     [
       "font-awesome@4.7.0",
-      "/home/pa_chris/GitHub/formio.js"
+      "/Users/pa_chris/GitHub/formio.js"
     ]
   ],
   "_development": true,
@@ -27,7 +27,7 @@
   ],
   "_resolved": "https://registry.npmjs.org/font-awesome/-/font-awesome-4.7.0.tgz",
   "_spec": "4.7.0",
-  "_where": "/home/pa_chris/GitHub/formio.js",
+  "_where": "/Users/pa_chris/GitHub/formio.js",
   "author": {
     "name": "Dave Gandy",
     "email": "dave@fontawesome.io",
