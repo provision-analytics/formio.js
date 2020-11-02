@@ -114,12 +114,14 @@ export default class SelectComponent extends Field {
             let firstValue;
             if (this.valueProperty) {
                 firstValue = _.get(firstItem, this.valueProperty);
-            } else {
+            }
+            else {
                 firstValue = firstItem;
             }
             if (firstValue && typeof firstValue === 'string') {
                 return '';
-            } else {
+            }
+            else {
                 return {};
             }
         }
@@ -203,7 +205,8 @@ export default class SelectComponent extends Field {
             const label = template.replace(/<\/?[^>]+(>|$)/g, '');
             if (!label || !this.t(label)) return;
             return template.replace(label, this.t(label));
-        } else {
+        }
+        else {
             return JSON.stringify(data);
         }
     }
@@ -286,7 +289,8 @@ export default class SelectComponent extends Field {
             if (typeof items == 'string') {
                 try {
                     items = JSON.parse(items);
-                } catch (err) {
+                }
+                catch (err) {
                     console.warn(err.message);
                     items = [];
                 }
@@ -325,9 +329,11 @@ export default class SelectComponent extends Field {
 
                 if (areItemsEnded) {
                     this.disableInfiniteScroll();
-                } else if (areItemsDownloaded) {
+                }
+                else if (areItemsDownloaded) {
                     this.selectOptions = [];
-                } else {
+                }
+                else {
                     this.serverCount = items.serverCount;
                 }
             }
@@ -340,7 +346,8 @@ export default class SelectComponent extends Field {
                 }
 
                 this.downloadedResources.serverCount = items.serverCount || this.downloadedResources.serverCount;
-            } else {
+            }
+            else {
                 this.downloadedResources = items || [];
                 this.selectOptions = [];
                 // If there is new select option with same id as already selected, set the new one
@@ -395,7 +402,8 @@ export default class SelectComponent extends Field {
                         eventType => this.addEventListener(window, eventType, recalculatePosition)
                     );
                 }
-            } else if (this.loading) {
+            }
+            else if (this.loading) {
                 // Re-attach select input.
                 // this.appendTo(this.refs.input[0], this.selectContainer);
             }
@@ -409,7 +417,8 @@ export default class SelectComponent extends Field {
                 this.setValue(this.dataValue, {
                     noUpdateEvent: true
                 });
-            } else {
+            }
+            else {
                 // If a default value is provided then select it.
                 const defaultValue = this.multiple ? this.defaultValue || [] : this.defaultValue;
                 if (defaultValue) {
@@ -462,7 +471,8 @@ export default class SelectComponent extends Field {
         if (this.component.searchField && search) {
             if (Array.isArray(search)) {
                 query[`${this.component.searchField}`] = search.join(',');
-            } else {
+            }
+            else {
                 query[`${this.component.searchField}`] = search;
             }
         }
@@ -528,7 +538,8 @@ export default class SelectComponent extends Field {
                         headers.set(header.key, this.interpolate(header.value));
                     }
                 });
-            } catch (err) {
+            }
+            catch (err) {
                 console.warn(err.message);
             }
         }
@@ -576,7 +587,8 @@ export default class SelectComponent extends Field {
     set serverCount(value) {
         if (this.isFromSearch) {
             this.searchServerCount = value;
-        } else {
+        }
+        else {
             this.defaultServerCount = value;
         }
     }
@@ -592,7 +604,8 @@ export default class SelectComponent extends Field {
     set downloadedResources(value) {
         if (this.isFromSearch) {
             this.searchDownloadedResources = value;
-        } else {
+        }
+        else {
             this.defaultDownloadedResources = value;
         }
     }
@@ -631,10 +644,12 @@ export default class SelectComponent extends Field {
                         if (forceUpdate || this.additionalResourcesAvailable || this.dataValue.length && !this.serverCount) {
                             try {
                                 this.loadItems(resourceUrl, searchInput, this.requestHeaders);
-                            } catch (err) {
+                            }
+                            catch (err) {
                                 console.warn(`Unable to load resources for ${this.key}`);
                             }
-                        } else {
+                        }
+                        else {
                             this.setItems(this.downloadedResources);
                         }
                         break;
@@ -657,11 +672,13 @@ export default class SelectComponent extends Field {
 
                         if (!this.component.data.method) {
                             method = 'GET';
-                        } else {
+                        }
+                        else {
                             method = this.component.data.method;
                             if (method.toUpperCase() === 'POST') {
                                 body = this.component.data.body;
-                            } else {
+                            }
+                            else {
                                 body = null;
                             }
                         }
@@ -703,14 +720,16 @@ export default class SelectComponent extends Field {
                     label: 'Loading...',
                     disabled: true,
                 }], 'value', 'label');
-            } else {
+            }
+            else {
                 this.choices.setChoices([{
                     value: '',
                     label: `<i class="${this.iconClass('refresh')}" style="font-size:1.3em;"></i>`,
                     disabled: true,
                 }], 'value', 'label', true);
             }
-        } else if (this.component.dataSrc === 'url' || this.component.dataSrc === 'resource') {
+        }
+        else if (this.component.dataSrc === 'url' || this.component.dataSrc === 'resource') {
             this.addOption('', this.t('loading...'));
         }
     }
@@ -760,7 +779,8 @@ export default class SelectComponent extends Field {
         if (typeof customOptions == 'string') {
             try {
                 customOptions = JSON.parse(customOptions);
-            } catch (err) {
+            }
+            catch (err) {
                 console.warn(err.message);
                 customOptions = {};
             }
@@ -852,7 +872,8 @@ export default class SelectComponent extends Field {
 
         if (this.component.multiple) {
             this.focusableElement = this.choices.input.element;
-        } else {
+        }
+        else {
             this.focusableElement = this.choices.containerInner.element;
             this.choices.containerOuter.element.setAttribute('tabIndex', '-1');
             if (choicesOptions.searchEnabled) {
@@ -876,7 +897,8 @@ export default class SelectComponent extends Field {
 
                     if (!event.target.value) {
                         this.triggerUpdate();
-                    } else {
+                    }
+                    else {
                         this.serverCount = null;
                         this.downloadedResources = [];
                     }
@@ -998,7 +1020,8 @@ export default class SelectComponent extends Field {
             this.setDisabled(this.choices.containerInner.element, true);
             this.focusableElement.removeAttribute('tabIndex');
             this.choices.disable();
-        } else {
+        }
+        else {
             this.setDisabled(this.choices.containerInner.element, false);
             this.focusableElement.setAttribute('tabIndex', this.component.tabindex || 0);
             this.choices.enable();
@@ -1069,7 +1092,8 @@ export default class SelectComponent extends Field {
         if (notFoundValuesToAdd.length) {
             if (this.choices) {
                 this.choices.setChoices(notFoundValuesToAdd, 'value', 'label');
-            } else {
+            }
+            else {
                 notFoundValuesToAdd.map(notFoundValue => {
                     this.addOption(notFoundValue.value, notFoundValue.label);
                 });
@@ -1105,7 +1129,8 @@ export default class SelectComponent extends Field {
             ) {
                 value = this.emptyValue;
             }
-        } else if (this.refs.selectContainer) {
+        }
+        else if (this.refs.selectContainer) {
             value = this.refs.selectContainer.value;
 
             if (this.valueProperty === '') {
@@ -1118,7 +1143,8 @@ export default class SelectComponent extends Field {
                     value = option.value;
                 }
             }
-        } else {
+        }
+        else {
             value = this.dataValue;
         }
         // Choices will return undefined if nothing is selected. We really want '' to be empty.
@@ -1186,7 +1212,8 @@ export default class SelectComponent extends Field {
             auto() {
                 if (_.isObject(this.value)) {
                     this.value = this.object().value;
-                } else {
+                }
+                else {
                     this.value = this.string().number().boolean().value;
                 }
 
@@ -1196,7 +1223,8 @@ export default class SelectComponent extends Field {
 
         try {
             return normalize[dataType]().value;
-        } catch (err) {
+        }
+        catch (err) {
             console.warn('Failed to normalize value', err);
             return value;
         }
@@ -1231,7 +1259,8 @@ export default class SelectComponent extends Field {
                 }
                 return value;
             });
-        } else {
+        }
+        else {
             if (typeof value === 'boolean' || typeof value === 'number') {
                 value = value.toString();
             }
@@ -1279,10 +1308,12 @@ export default class SelectComponent extends Field {
                     this.choices.setChoices(this.selectOptions, 'value', 'label', true);
                 }
                 this.choices.setChoiceByValue(value);
-            } else if (hasPreviousValue || flags.resetValue) {
+            }
+            else if (hasPreviousValue || flags.resetValue) {
                 this.choices.removeActiveItems();
             }
-        } else {
+        }
+        else {
             if (hasValue) {
                 const values = Array.isArray(value) ? value : [value];
                 _.each(this.selectOptions, (selectOption) => {
@@ -1294,7 +1325,8 @@ export default class SelectComponent extends Field {
                         }
                     });
                 });
-            } else {
+            }
+            else {
                 _.each(this.selectOptions, (selectOption) => {
                     if (selectOption.element) {
                         selectOption.element.selected = false;
@@ -1350,7 +1382,8 @@ export default class SelectComponent extends Field {
             if (valueProperty) {
                 if (Array.isArray(data)) {
                     data.forEach((item) => item[valueProperty] = item[valueProperty].toString());
-                } else {
+                }
+                else {
                     data[valueProperty] = data[valueProperty].toString();
                 }
                 return data;
@@ -1426,7 +1459,8 @@ export default class SelectComponent extends Field {
         super.setErrorClasses(elements, dirty, hasError);
         if (this.choices) {
             super.setErrorClasses([this.choices.containerInner.element], dirty, hasError);
-        } else {
+        }
+        else {
             super.setErrorClasses([this.refs.selectContainer], dirty, hasError);
         }
     }
