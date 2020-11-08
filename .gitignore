@@ -1,6 +1,6 @@
 dist
-app/*
 app
+docs
 _site
 lib
 dump.rdb
@@ -12,3 +12,5 @@ bower_components
 .idea
 .ruby-version
 .ruby-gemset
+app/bootswatch/package.json
+app/fontawesome/package.json

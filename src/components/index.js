@@ -1,4 +1,3 @@
-import AddressComponent from './address/Address';
 import ButtonComponent from './button/Button';
 import CheckBoxComponent from './checkbox/Checkbox';
 import ColumnsComponent from './columns/Columns';
@@ -47,7 +46,6 @@ import UrlComponent from './url/Url';
 import WellComponent from './well/Well';
 
 export default {
-  address: AddressComponent,
   base: Component,
   component: Component,
   componentmodal: ComponentModal,

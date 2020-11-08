@@ -1,5 +1,4 @@
 import Components from '.';
-import AddressForm from './address/Address.form';
 import ButtonForm from './button/Button.form';
 import CheckboxForm from './checkbox/Checkbox.form';
 import ColumnsForm from './columns/Columns.form';
@@ -41,7 +40,6 @@ import UnknownForm from './unknown/Unknown.form';
 import UrlForm from './url/Url.form';
 import WellForm from './well/Well.form';
 
-Components.address.editForm = AddressForm;
 Components.button.editForm = ButtonForm;
 Components.checkbox.editForm = CheckboxForm;
 Components.columns.editForm = ColumnsForm;
