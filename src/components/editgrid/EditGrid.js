@@ -86,7 +86,7 @@ export default class EditGridComponent extends NestedArrayComponent {
     <h3 ref="dialogHeader">${this.t('Do you want to clear data?')}</h3>
     <div style="display:flex; justify-content: flex-end;">
       <button ref="dialogCancelButton" class="btn btn-secondary">${this.t('Cancel')}</button>
-      <button ref="dialogYesButton" class="btn btn-primary">${this.t('Yes, delete it')}</button>
+      <button ref="dialogYesButton" class="btn btn-danger">${this.t('Yes, delete it')}</button>
     </div>
   `;
   }
@@ -325,7 +325,10 @@ export default class EditGridComponent extends NestedArrayComponent {
                 if (this.component.rowDrafts) {
                   this.validateRow(editRow, false);
 
-                  if (this.component.modal && editRow.errors && !!editRow.errors.length) {
+                  const hasErrors = editRow.errors && !!editRow.errors.length;
+                  const shouldShowRowErrorsAlert = this.component.modal && hasErrors && this.root?.submitted;
+
+                  if (shouldShowRowErrorsAlert) {
                     this.alert.showErrors(editRow.errors, false);
                     editRow.alerts = true;
                   }
@@ -393,7 +396,11 @@ export default class EditGridComponent extends NestedArrayComponent {
             const instance = flattenedComponents[component.key];
             const view = instance ? instance.getView(data || instance.dataValue) : '';
 
-            return view;
+            // If there is an html tag in view, don't allow it to be injected in template
+            const htmlTagRegExp = new RegExp('<(.*?)>');
+            return typeof view === 'string' && view.length && !instance.component?.template && htmlTagRegExp.test(view)
+              ? `<input type="text" value="${view.replace(/"/g, '&quot;')}" readonly/>`
+              : view;
           },
           state: this.editRows[rowIndex].state,
         },
@@ -482,7 +489,12 @@ export default class EditGridComponent extends NestedArrayComponent {
     editRow.willBeSaved = false;
     const { components } = editRow;
     modalContent.innerHTML = this.renderComponents(components);
+
     const dialog = this.component.modal ? this.createModal(modalContent, {}, () => this.showDialog(rowIndex)) : undefined;
+    dialog.classList.add(`editgrid-row-modal-${this.id}`);
+
+    editRow.dialog = dialog;
+
     if (this.alert) {
       this.alert.clear();
       this.alert = null;
@@ -497,6 +509,10 @@ export default class EditGridComponent extends NestedArrayComponent {
         this.alert.clear();
         this.alert = null;
       }
+
+      // Remove references to dialog elements to prevent possible in some cases memory leaks
+      delete editRow.confirmationDialog;
+      delete editRow.dialog;
     });
 
     dialog.refs.dialogContents.appendChild(this.ce('button', {
@@ -535,6 +551,8 @@ export default class EditGridComponent extends NestedArrayComponent {
     });
 
     const dialog = this.createModal(wrapper);
+    dialog.classList.add(`editgrid-row-modal-confirmation-${this.id}`);
+
     const close = (event) => {
       event.preventDefault();
       dialog.close();
@@ -553,6 +571,8 @@ export default class EditGridComponent extends NestedArrayComponent {
       close(event);
       dialogResult.reject();
     });
+
+    editRow.confirmationDialog = dialog;
     return promise;
   }
 
@@ -560,7 +580,7 @@ export default class EditGridComponent extends NestedArrayComponent {
     const editRow = this.editRows[rowIndex];
     const isAlreadyEditing = editRow.state === EditRowState.Editing || editRow.state === EditRowState.New;
     if (!editRow || isAlreadyEditing) {
-      return;
+      return NativePromise.resolve();
     }
     editRow.prevState = editRow.state;
     editRow.state = this.options.readOnly ? EditRowState.Viewing : EditRowState.Editing;
@@ -777,8 +797,12 @@ export default class EditGridComponent extends NestedArrayComponent {
   validateRow(editRow, dirty) {
     let valid = true;
     const errorsSnapshot = [...this.errors];
+    const shouldValidateDraft = editRow.state === EditRowState.Draft &&
+      !this.pristine &&
+      !this.root?.pristine &&
+      !this.hasOpenRows();
 
-    if (editRow.state === EditRowState.Editing || dirty || (editRow.state === EditRowState.Draft && !this.pristine && !this.root.pristine && !this.hasOpenRows())) {
+    if (editRow.state === EditRowState.Editing || dirty || shouldValidateDraft) {
       editRow.components.forEach(comp => {
         if (!this.component.rowDrafts) {
           comp.setPristine(!dirty);
@@ -807,7 +831,9 @@ export default class EditGridComponent extends NestedArrayComponent {
 
     editRow.errors = !valid ? this.errors.filter((err) => !errorsSnapshot.includes(err)) : null;
 
-    this.showRowErrorAlerts(editRow, !!valid);
+    if (!this.component.rowDrafts || this.root?.submitted) {
+      this.showRowErrorAlerts(editRow, !!valid);
+    }
 
     return !!valid;
   }

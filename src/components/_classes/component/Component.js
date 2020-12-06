@@ -12,6 +12,7 @@ import { fastCloneDeep, boolValue, getComponentPathWithoutIndicies, getDataParen
 import Element from '../../../Element';
 import ComponentModal from '../componentModal/ComponentModal';
 import Widgets from '../../../widgets';
+import { getFormioUploadAdapterPlugin } from '../../../providers/storage/uploadAdapter';
 
 const isIEBrowser = FormioUtils.getIEBrowserVersion();
 const CKEDITOR_URL = isIEBrowser
@@ -273,6 +274,9 @@ export default class Component extends Element {
      */
     this.component = this.mergeSchema(component || {});
 
+    // Add the id to the component.
+    this.component.id = this.id;
+
     // Save off the original component to be used in logic.
     this.originalComponent = fastCloneDeep(this.component);
 
@@ -291,9 +295,6 @@ export default class Component extends Element {
      * @type {*}
      */
     this._data = data || {};
-
-    // Add the id to the component.
-    this.component.id = this.id;
 
     /**
      * The existing error that this component has.
@@ -529,11 +530,7 @@ export default class Component extends Element {
   }
 
   set parentVisible(value) {
-    if (this._parentVisible !== value) {
-      this._parentVisible = value;
-      this.clearOnHide();
-      this.redraw();
-    }
+    this._parentVisible = value;
   }
 
   get parentVisible() {
@@ -541,11 +538,7 @@ export default class Component extends Element {
   }
 
   set parentDisabled(value) {
-    if (this._parentDisabled !== value) {
-      this._parentDisabled = value;
-      this.clearOnHide();
-      this.redraw();
-    }
+    this._parentDisabled = value;
   }
 
   get parentDisabled() {
@@ -615,11 +608,13 @@ export default class Component extends Element {
   }
 
   get labelWidth() {
-    return this.component.labelWidth || 30;
+    const width = this.component.labelWidth;
+    return width >= 0 ? width : 30;
   }
 
   get labelMargin() {
-    return this.component.labelMargin || 3;
+    const margin = this.component.labelMargin;
+    return margin >= 0 ? margin : 3;
   }
 
   get isAdvancedLabel() {
@@ -967,9 +962,14 @@ export default class Component extends Element {
 
   getModalPreviewTemplate() {
     const dataValue = this.component.type === 'password' ? this.dataValue.replace(/./g, '•') : this.dataValue;
+    const message = this.error ? {
+      level: 'error',
+      message: this.error.message,
+    } : '';
 
     return this.renderTemplate('modalPreview', {
-      previewText: this.getValueAsString(dataValue, { modalPreview: true }) || this.t('Click to set value')
+      previewText: this.getValueAsString(dataValue, { modalPreview: true }) || this.t('Click to set value'),
+      messages: message && this.renderTemplate('message', message)
     });
   }
 
@@ -1430,6 +1430,18 @@ export default class Component extends Element {
     this.pristine = pristine;
   }
 
+  get isPristine() {
+    return this.pristine;
+  }
+
+  setDirty(dirty) {
+    this.dirty = dirty;
+  }
+
+  get isDirty() {
+    return this.dirty;
+  }
+
   /**
    * Removes a value out of the data array and rebuild the rows.
    * @param {number} index - The index of the data element to remove.
@@ -1825,22 +1837,24 @@ export default class Component extends Element {
     }
   }
 
-  setErrorClasses(elements, dirty, hasErrors, hasMessages) {
+  setErrorClasses(elements, dirty, hasErrors, hasMessages, element = this.element) {
     this.clearErrorClasses();
     elements.forEach((element) => this.removeClass(this.performInputMapping(element), 'is-invalid'));
+    this.setInputWidgetErrorClasses(elements, hasErrors);
+
     if (hasErrors) {
       // Add error classes
       elements.forEach((input) => this.addClass(this.performInputMapping(input), 'is-invalid'));
 
       if (dirty && this.options.highlightErrors) {
-        this.addClass(this.element, this.options.componentErrorClass);
+        this.addClass(element, this.options.componentErrorClass);
       }
       else {
-        this.addClass(this.element, 'has-error');
+        this.addClass(element, 'has-error');
       }
     }
     if (hasMessages) {
-      this.addClass(this.element, 'has-message');
+      this.addClass(element, 'has-message');
     }
   }
 
@@ -1961,7 +1975,8 @@ export default class Component extends Element {
             'alignCenter',
             'alignRight'
           ]
-        }
+        },
+        extraPlugins: []
       },
       default: {}
     };
@@ -1969,9 +1984,13 @@ export default class Component extends Element {
 
   addCKE(element, settings, onChange) {
     settings = _.isEmpty(settings) ? {} : settings;
-    settings.base64Upload = true;
+    settings.base64Upload = this.component.isUploadEnabled ? false : true;
     settings.mediaEmbed = { previewsInData: true };
     settings = _.merge(this.wysiwygDefault.ckeditor, _.get(this.options, 'editors.ckeditor.settings', {}), settings);
+
+    if (this.component.isUploadEnabled) {
+      settings.extraPlugins.push(getFormioUploadAdapterPlugin(this.fileService, this));
+    }
 
     return Formio.requireLibrary(
       'ckeditor',
@@ -2649,7 +2668,9 @@ export default class Component extends Element {
   checkValidity(data, dirty, row, silentCheck) {
     data = data || this.rootValue;
     row = row || this.data;
-    return this.checkComponentValidity(data, dirty, row, { silentCheck });
+    const isValid = this.checkComponentValidity(data, dirty, row, { silentCheck });
+    this.checkModal();
+    return isValid;
   }
 
   checkAsyncValidity(data, dirty, row, silentCheck) {
@@ -2699,10 +2720,21 @@ export default class Component extends Element {
       isDirty = true;
     }
 
+    this.setDirty(isDirty);
+
     if (this.component.validateOn === 'blur' && flags.fromSubmission) {
       return true;
     }
-    return this.checkComponentValidity(data, isDirty, row);
+    const isValid = this.checkComponentValidity(data, isDirty, row);
+    this.checkModal();
+    return isValid;
+  }
+
+  checkModal(isValid, dirty) {
+    if (!this.component.modalEdit || !this.componentModal) {
+      return;
+    }
+    this.setOpenModalElement();
   }
 
   get validationValue() {
@@ -2731,11 +2763,23 @@ export default class Component extends Element {
     return this.error ? [this.error] : [];
   }
 
-  clearErrorClasses() {
-    this.removeClass(this.element, this.options.componentErrorClass);
-    this.removeClass(this.element, 'alert alert-danger');
-    this.removeClass(this.element, 'has-error');
-    this.removeClass(this.element, 'has-message');
+  clearErrorClasses(element = this.element) {
+    this.removeClass(element, this.options.componentErrorClass);
+    this.removeClass(element, 'alert alert-danger');
+    this.removeClass(element, 'has-error');
+    this.removeClass(element, 'has-message');
+  }
+
+  setInputWidgetErrorClasses(inputRefs, hasErrors) {
+    if (!this.isInputComponent || !this.component.widget || !inputRefs?.length) {
+      return;
+    }
+
+    inputRefs.forEach((input) => {
+      if (input.widget && input.widget.setErrorClasses) {
+        input.widget.setErrorClasses(hasErrors);
+      }
+    });
   }
 
   setCustomValidity(messages, dirty, external) {

@@ -989,8 +989,15 @@ body.formio-dialog-open {
     text-align: right;
   }
 }
-.formio-component-textarea .alert .ck-editor__editable{
-  color: inherit;
+
+.formio-component-textarea {
+  .alert .ck-editor__editable {
+    color: inherit;
+  }
+  
+  .ck.ck-editor__editable .image .ck-progress-bar {
+    height: 4px;
+  }
 }
 
 div[data-oembed-url] {
@@ -1029,6 +1036,7 @@ div[data-oembed-url] {
 .open-modal-button {
   width: 100%;
   text-align: left;
+  white-space: normal;
 }
 
 .formio-component-modal-wrapper-signature .open-modal-button {
@@ -1137,6 +1145,24 @@ div[data-oembed-url] {
   border-right: solid 5px hsl(0, 0%, 80%);
 }
 
+.formio-component-content {
+  & .text-tiny {
+    font-size: 0.7em;
+  }
+
+  & .text-small {
+    font-size: 0.85em;
+  }
+
+  & .text-big {
+    font-size: 1.4em;
+  }
+
+  & .text-huge {
+    font-size: 1.8em;
+  }
+}
+
 .formio-component-address.formio-component-label-hidden {
   & > label.field-required {
     z-index: 1;
@@ -1204,14 +1230,11 @@ div[data-oembed-url] {
 }
 
 //show textarea submission in read-only mode and PDF view with initial line and space formatting
-div[read-only="true"] {
-  .formio-component-textarea {
-    div[ref="input"] {
-      white-space: pre-wrap;
-    }
+.formio-component-textarea {
+  div.formio-editor-read-only-content[ref="input"] {
+    white-space: pre-wrap;
   }
 }
-
 
 .formio-editor-read-only-content {
   img {
